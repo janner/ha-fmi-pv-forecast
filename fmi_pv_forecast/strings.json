@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "FMI PV Forecast - Location",
+        "description": "Configure the location for your solar PV installation. The coordinates are pre-filled from your Home Assistant configuration.",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        }
+      },
+      "array": {
+        "title": "FMI PV Forecast - Panel Array",
+        "description": "Configure a panel array. You have {array_count} array(s) configured so far.",
+        "data": {
+          "name": "Array Name",
+          "tilt": "Panel Tilt (0° = horizontal, 90° = vertical)",
+          "azimuth": "Panel Azimuth (0° = North, 90° = East, 180° = South, 270° = West)",
+          "rated_power": "Rated Power (kW)",
+          "module_elevation": "Module Elevation (meters above ground)",
+          "albedo_preset": "Ground Surface Type",
+          "albedo": "Custom Albedo (0-1)"
+        }
+      },
+      "more_arrays": {
+        "title": "FMI PV Forecast - Add More Arrays?",
+        "description": "You have configured {array_count} array(s): {array_names}. Would you like to add another array?",
+        "data": {
+          "add_more": "Add another array"
+        }
+      },
+      "production_sensor": {
+        "title": "FMI PV Forecast - Accuracy Tracking",
+        "description": "Optionally select your actual solar production sensor to track forecast accuracy. Found {sensor_count} energy sensor(s).",
+        "data": {
+          "production_sensor": "Production Sensor"
+        }
+      }
+    },
+    "error": {
+      "invalid_power": "Rated power must be greater than 0",
+      "invalid_tilt": "Tilt must be between 0 and 90 degrees",
+      "invalid_azimuth": "Azimuth must be between 0 and 360 degrees",
+      "cannot_connect": "Failed to connect to FMI Open Data",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Location is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "FMI PV Forecast Options",
+        "description": "You have {array_count} arrays configured: {array_names}",
+        "data": {
+          "production_sensor": "Production Sensor (for accuracy tracking)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "forecast_today": {
+        "name": "Forecast Today"
+      },
+      "forecast_tomorrow": {
+        "name": "Forecast Tomorrow"
+      },
+      "power_forecast": {
+        "name": "Power Forecast"
+      },
+      "peak_power": {
+        "name": "Peak Power Today"
+      },
+      "peak_hour": {
+        "name": "Peak Hour Today"
+      },
+      "hourly_forecast": {
+        "name": "Hourly Forecast"
+      },
+      "forecast_accuracy": {
+        "name": "Forecast Accuracy (7-day)"
+      }
+    }
+  }
+}

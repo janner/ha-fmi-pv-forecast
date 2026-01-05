@@ -1,0 +1,173 @@
+# Example ApexCharts card configuration for FMI PV Forecast
+# 
+# Requirements:
+# - Install apexcharts-card from HACS: https://github.com/RomRider/apexcharts-card
+#
+# Usage:
+# 1. Copy this card configuration to your dashboard
+# 2. Replace sensor entity IDs with your actual sensor names
+
+# Example 1: Basic 3-day forecast chart
+type: custom:apexcharts-card
+header:
+  show: true
+  title: Solar PV Forecast
+  show_states: true
+  colorize_states: true
+graph_span: 3d
+span:
+  start: day
+yaxis:
+  - id: power
+    min: 0
+    apex_config:
+      title:
+        text: Power (W)
+series:
+  - entity: sensor.pv_system_total_total_hourly_forecast
+    name: Forecast
+    type: area
+    color: "#303193"
+    data_generator: |
+      return entity.attributes.forecast.map((entry) => {
+        return [new Date(entry.datetime).getTime(), entry.power];
+      });
+  - entity: sensor.pv_system_total_total_hourly_forecast
+    name: Clear Sky Max
+    type: line
+    color: "#6ec8fa"
+    opacity: 0.5
+    stroke_width: 2
+    data_generator: |
+      return entity.attributes.forecast.map((entry) => {
+        return [new Date(entry.datetime).getTime(), entry.power_clear_sky];
+      });
+
+---
+
+# Example 2: Today's forecast with current time marker
+type: custom:apexcharts-card
+header:
+  show: true
+  title: Today's Solar Forecast
+  show_states: true
+graph_span: 24h
+span:
+  start: day
+now:
+  show: true
+  color: red
+  label: Now
+yaxis:
+  - id: power
+    min: 0
+    apex_config:
+      title:
+        text: Power (W)
+series:
+  - entity: sensor.pv_system_total_total_hourly_forecast
+    name: Weather Forecast
+    type: area
+    color: "#303193"
+    fill_raw: last
+    data_generator: |
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      return entity.attributes.forecast
+        .filter((entry) => entry.datetime.startsWith(today))
+        .map((entry) => {
+          return [new Date(entry.datetime).getTime(), entry.power];
+        });
+  - entity: sensor.pv_system_total_total_hourly_forecast
+    name: Clear Sky
+    type: line
+    color: "#6ec8fa"
+    opacity: 0.6
+    stroke_width: 2
+    data_generator: |
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      return entity.attributes.forecast
+        .filter((entry) => entry.datetime.startsWith(today))
+        .map((entry) => {
+          return [new Date(entry.datetime).getTime(), entry.power_clear_sky];
+        });
+
+---
+
+# Example 3: Daily energy bar chart
+type: custom:apexcharts-card
+header:
+  show: true
+  title: Daily Energy Forecast
+chart_type: bar
+graph_span: 3d
+span:
+  start: day
+yaxis:
+  - id: energy
+    min: 0
+    apex_config:
+      title:
+        text: Energy (kWh)
+series:
+  - entity: sensor.pv_system_total_total_forecast_today
+    name: Today
+    type: column
+    color: "#303193"
+  - entity: sensor.pv_system_total_total_forecast_tomorrow
+    name: Tomorrow
+    type: column
+    color: "#6ec8fa"
+
+---
+
+# Example 4: Per-array comparison (if you have multiple arrays)
+type: custom:apexcharts-card
+header:
+  show: true
+  title: Array Comparison - Today
+chart_type: bar
+graph_span: 1d
+yaxis:
+  - id: energy
+    min: 0
+    apex_config:
+      title:
+        text: Energy (kWh)
+series:
+  - entity: sensor.pv_array_south_roof_forecast_today
+    name: South Roof
+    type: column
+    color: "#303193"
+  - entity: sensor.pv_array_east_garage_forecast_today
+    name: East Garage
+    type: column
+    color: "#6ec8fa"
+
+---
+
+# Example 5: Compact card for dashboard
+type: custom:apexcharts-card
+header:
+  show: true
+  title: PV Forecast
+  show_states: true
+  colorize_states: true
+graph_span: 2d
+span:
+  start: day
+apex_config:
+  chart:
+    height: 200px
+  legend:
+    show: false
+series:
+  - entity: sensor.pv_system_total_total_hourly_forecast
+    name: Forecast
+    type: area
+    color: "#303193"
+    data_generator: |
+      return entity.attributes.forecast.map((entry) => {
+        return [new Date(entry.datetime).getTime(), entry.power];
+      });
