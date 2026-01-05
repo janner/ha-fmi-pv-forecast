@@ -6,6 +6,7 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 
 from .const import DOMAIN
 
@@ -29,7 +30,14 @@ class FMIPVForecastConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required("name", default="Test"): str,
+                    vol.Required(
+                        CONF_LATITUDE,
+                        default=self.hass.config.latitude,
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_LONGITUDE,
+                        default=self.hass.config.longitude,
+                    ): vol.Coerce(float),
                 }
             ),
         )
