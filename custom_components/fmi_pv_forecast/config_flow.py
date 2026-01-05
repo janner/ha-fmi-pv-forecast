@@ -8,11 +8,7 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
-from homeassistant.helpers.selector import (
-    NumberSelector,
-    NumberSelectorConfig,
-    NumberSelectorMode,
-)
+from homeassistant.helpers import selector
 
 from .const import DOMAIN
 
@@ -49,23 +45,23 @@ class FMIPVForecastConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_LATITUDE,
                         default=self.hass.config.latitude,
-                    ): NumberSelector(
-                        NumberSelectorConfig(
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
                             min=-90,
                             max=90,
                             step=0.000001,
-                            mode=NumberSelectorMode.BOX,
+                            mode=selector.NumberSelectorMode.BOX,
                         )
                     ),
                     vol.Required(
                         CONF_LONGITUDE,
                         default=self.hass.config.longitude,
-                    ): NumberSelector(
-                        NumberSelectorConfig(
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
                             min=-180,
                             max=180,
                             step=0.000001,
-                            mode=NumberSelectorMode.BOX,
+                            mode=selector.NumberSelectorMode.BOX,
                         )
                     ),
                 }
