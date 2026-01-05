@@ -5,8 +5,9 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.core import callback
 
 from .const import (
     DOMAIN,
@@ -15,8 +16,14 @@ from .const import (
     CONF_TILT,
     CONF_AZIMUTH,
     CONF_RATED_POWER,
+    CONF_MODULE_ELEVATION,
+    CONF_ALBEDO,
+    CONF_PRODUCTION_SENSOR,
     DEFAULT_TILT,
     DEFAULT_AZIMUTH,
+    DEFAULT_MODULE_ELEVATION,
+    DEFAULT_ALBEDO,
+    ALBEDO_PRESETS,
 )
 
 
@@ -67,11 +74,20 @@ class FMIPVForecastConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_RATED_POWER] = "invalid_power"
             
             if not errors:
+                # Get albedo value from preset
+                albedo_preset = user_input.get("albedo_preset", "grass")
+                if albedo_preset == "custom":
+                    albedo = user_input.get(CONF_ALBEDO, DEFAULT_ALBEDO)
+                else:
+                    albedo = ALBEDO_PRESETS.get(albedo_preset, DEFAULT_ALBEDO)
+
                 self._arrays.append({
                     CONF_ARRAY_NAME: user_input[CONF_ARRAY_NAME],
                     CONF_TILT: user_input[CONF_TILT],
                     CONF_AZIMUTH: user_input[CONF_AZIMUTH],
                     CONF_RATED_POWER: user_input[CONF_RATED_POWER],
+                    CONF_MODULE_ELEVATION: user_input.get(CONF_MODULE_ELEVATION, DEFAULT_MODULE_ELEVATION),
+                    CONF_ALBEDO: albedo,
                 })
                 return await self.async_step_more_arrays()
 
@@ -85,6 +101,11 @@ class FMIPVForecastConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_TILT, default=DEFAULT_TILT): vol.Coerce(float),
                     vol.Required(CONF_AZIMUTH, default=DEFAULT_AZIMUTH): vol.Coerce(float),
                     vol.Required(CONF_RATED_POWER): vol.Coerce(float),
+                    vol.Optional(CONF_MODULE_ELEVATION, default=DEFAULT_MODULE_ELEVATION): vol.Coerce(float),
+                    vol.Optional("albedo_preset", default="grass"): vol.In(
+                        ["grass", "concrete", "snow", "asphalt", "soil", "water", "custom"]
+                    ),
+                    vol.Optional(CONF_ALBEDO, default=DEFAULT_ALBEDO): vol.Coerce(float),
                 }
             ),
             errors=errors,
@@ -116,6 +137,39 @@ class FMIPVForecastConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required("add_more", default=False): bool,
+                }
+            ),
+        )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry) -> OptionsFlow:
+        """Get the options flow for this handler."""
+        return FMIPVForecastOptionsFlow(config_entry)
+
+
+class FMIPVForecastOptionsFlow(OptionsFlow):
+    """Handle options flow for FMI PV Forecast."""
+
+    def __init__(self, config_entry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle options flow."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_PRODUCTION_SENSOR,
+                        default=self.config_entry.options.get(CONF_PRODUCTION_SENSOR, ""),
+                    ): str,
                 }
             ),
         )
