@@ -1,13 +1,14 @@
 """Config flow for FMI PV Forecast integration."""
+from __future__ import annotations
+
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import voluptuous as vol
 
-from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
@@ -30,10 +31,11 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class FMIPVForecastConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class FMIPVForecastConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for FMI PV Forecast."""
 
     VERSION = 1
+    MINOR_VERSION = 1
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -41,8 +43,8 @@ class FMIPVForecastConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._arrays: list[dict[str, Any]] = []
 
     async def async_step_user(
-        self, user_input: Optional[dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step - location setup."""
         errors: dict[str, str] = {}
 
@@ -88,8 +90,8 @@ class FMIPVForecastConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_array(
-        self, user_input: Optional[dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle adding a panel array."""
         errors: dict[str, str] = {}
 
@@ -198,8 +200,8 @@ class FMIPVForecastConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_more_arrays(
-        self, user_input: Optional[dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Ask if user wants to add more arrays."""
         if user_input is not None:
             if user_input.get("add_more", False):
@@ -220,8 +222,8 @@ class FMIPVForecastConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_production_sensor(
-        self, user_input: Optional[dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Configure optional production sensor for accuracy tracking."""
         if user_input is not None:
             production_sensor = user_input.get(CONF_PRODUCTION_SENSOR)
@@ -272,22 +274,22 @@ class FMIPVForecastConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> config_entries.OptionsFlow:
+        config_entry,
+    ) -> OptionsFlow:
         """Get the options flow for this handler."""
         return FMIPVForecastOptionsFlow(config_entry)
 
 
-class FMIPVForecastOptionsFlow(config_entries.OptionsFlow):
+class FMIPVForecastOptionsFlow(OptionsFlow):
     """Handle options flow for FMI PV Forecast."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self, config_entry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
 
     async def async_step_init(
-        self, user_input: Optional[dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle options flow."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
